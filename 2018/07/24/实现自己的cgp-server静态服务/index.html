@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="柴关鹏在 Github 上的个人博客">
+    <meta name="keyword" content="null">
+    <meta name="theme-color" content="#600090">
+    <meta name="msapplication-navbutton-color" content="#600090">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#600090">
+    <link rel="shortcut icon" href="https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-person-128.png">
+    <link rel="alternate" type="application/atom+xml" title="chaiguanpeng" href="/atom.xml">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css">
+    <title>
+        
+        实现自己的cgp-server静态服务｜言Sir&#39;s blog
+        
+    </title>
+
+    <link rel="canonical" href="http://haojen.github.io/2018/07/24/实现自己的cgp-server静态服务/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/blog-style.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+</head>
+
+<style>
+
+    header.intro-header {
+        background-image: url('//oqsmnfdij.bkt.clouddn.com/images/bg_1.jpg')
+    }
+</style>
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="" class="animated fadeIn">
+<!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top " id="nav-top" data-ispost = "true" data-istags="false
+" data-ishome = "false" >
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand animated pulse" href="/">
+                <span class="brand-logo">
+                    chaiguanpeng
+                </span>
+                's Blog
+            </a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <!-- /.navbar-collapse -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+					
+                    
+                        
+							
+                        <li>
+                            <a href="/tags/">tags</a>
+                        </li>
+							
+						
+                    
+					
+					
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+//    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+<!-- Main Content -->
+
+<!--only post-->
+
+
+<img class="wechat-title-img"
+     src="http://oqsmnfdij.bkt.clouddn.com/images/poem1.jpg">
+
+
+<style>
+    
+    header.intro-header {
+        background-image: url('http://oqsmnfdij.bkt.clouddn.com/images/poem1.jpg?imageView2/1/w/1400/h/400/interlace/1/q/90')
+    }
+
+    
+</style>
+
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <div class="post-heading">
+                    <h1>实现自己的cgp-server静态服务</h1>
+                    
+                    <span class="meta">
+                         作者 言Sir
+                        <span>
+                          日期 2018-07-24
+                         </span>
+                    </span>
+                    <div class="tags text-center">
+                        
+                        <a class="tag" href="/tags/#node"
+                           title="node">node</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="post-title-haojen">
+        <span>
+            实现自己的cgp-server静态服务
+        </span>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <!-- Post Container -->
+            <div class="col-lg-8 col-lg-offset-1 col-sm-9 post-container">
+                <h4 id="序言"><a href="#序言" class="headerlink" title="序言"></a>序言</h4><blockquote>
+<p>手写一个静态服务可以对node中http模块有更深的理解，这是我们的初衷。http-server相信大家都用过，这里我们要实现类似个功能。功能如下</p>
+<ul>
+<li>启动我们写好的模块后，输入localhost:3000打开我们public目录下的文件(默认打开index.html)</li>
+<li>用到debug插件，主要用于在命令行输出一些日志，我们只用基本的功能，所以没有难点。<a href="https://www.npmjs.com/package/debug" target="_blank" rel="noopener">不会戳这里</a></li>
+<li>可能用到chalk插件，就是把命令行输出的日志五颜六色，变得好看，没什么太大作用，<a href="https://www.npmjs.com/package/chalk" target="_blank" rel="noopener">用法戳这里</a></li>
+</ul>
+</blockquote>
+<h4 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h4><h5 id="我们的目录解构如下"><a href="#我们的目录解构如下" class="headerlink" title="我们的目录解构如下"></a>我们的目录解构如下</h5><p><img src="https://user-gold-cdn.xitu.io/2018/7/23/164c777502e521e2?w=540&amp;h=426&amp;f=png&amp;s=6185" alt=""></p>
+<ul>
+<li>大家应该一看就懂啦，启动我们服务，自动打开public/index.html</li>
+<li>bin/<a href="http://www.js" target="_blank" rel="noopener">www.js</a> 是我们后面用命令行启动服务的配置</li>
+<li>public是我们的静态目录</li>
+<li>app.js  主文件</li>
+<li>config.js 配置文件</li>
+<li>tmpl.html是我们用ejs编译的模板，后面讲到</li>
+</ul>
+<h4 id="先写最简单的config-js"><a href="#先写最简单的config-js" class="headerlink" title="先写最简单的config.js"></a>先写最简单的config.js</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">let path = require(&apos;path&apos;);</span><br><span class="line">let config = &#123;</span><br><span class="line">    hostname:&apos;127.0.0.1&apos;, //默认主机</span><br><span class="line">    port:3000,  //默认端口</span><br><span class="line">    dir:path.join(__dirname,&apos;../public&apos;) //默认打开的目录(绝对路径)</span><br><span class="line">&#125;;</span><br><span class="line">module.exports = config;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>以上代码都能看得懂，下面开始写我们主文件</p>
+</blockquote>
+<h4 id="核心代码-app-js"><a href="#核心代码-app-js" class="headerlink" title="核心代码 app.js"></a>核心代码 app.js</h4><h5 id="1、引入所需的依赖包"><a href="#1、引入所需的依赖包" class="headerlink" title="1、引入所需的依赖包"></a>1、引入所需的依赖包</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">let http = require(&apos;http&apos;);</span><br><span class="line">let url = require(&apos;url&apos;);</span><br><span class="line">let path = require(&apos;path&apos;);</span><br><span class="line">let util = require(&apos;util&apos;);</span><br><span class="line">let fs = require(&apos;fs&apos;);</span><br><span class="line">let zlib = require(&apos;zlib&apos;);</span><br><span class="line">let mime = require(&apos;mime&apos;); // 得到内容类型</span><br><span class="line">let debug = require(&apos;debug&apos;)(&apos;*&apos;); // 打印输出 会根据环境变量控制输出</span><br><span class="line">let chalk = require(&apos;chalk&apos;); // 粉笔</span><br><span class="line">let ejs = require(&apos;ejs&apos;); // 模板引擎</span><br><span class="line"></span><br><span class="line">//先声明好，下面解释</span><br><span class="line">let config = require(&apos;./config&apos;);</span><br><span class="line">let stat = util.promisify(fs.stat);//promise化 fs.stat方法</span><br><span class="line">let readdir = util.promisify(fs.readdir);</span><br><span class="line">let template = fs.readFileSync(path.join(__dirname,&apos;tmpl.html&apos;),&apos;utf8&apos;); //读取ejs的模板文件</span><br></pre></td></tr></table></figure>
+<ul>
+<li>mime解析文件给你内容类型，<a href="https://www.npmjs.com/package/mime" target="_blank" rel="noopener">用法</a></li>
+<li>ejs渲染引擎，我们用最简单功能，不会也能看懂</li>
+</ul>
+<h5 id="2、http模块开启服务"><a href="#2、http模块开启服务" class="headerlink" title="2、http模块开启服务"></a>2、http模块开启服务</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">/*运行的条件 指定主机名</span><br><span class="line">* 指定启动的端口号</span><br><span class="line">* 指定运行的目录</span><br><span class="line"> */</span><br><span class="line">let config = require(&apos;./config&apos;); //引入配置文件</span><br><span class="line">class Server &#123; //声明类</span><br><span class="line">    constructor() &#123;</span><br><span class="line">        this.config = config; //讲配置挂载再我们的实例上</span><br><span class="line">    &#125;</span><br><span class="line">    handleRequest(req,res)&#123; //确保这里的this都是实例</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    start()&#123;//服务开始的方法</span><br><span class="line">        let server =http.createServer(this.handleRequest.bind(this));</span><br><span class="line">        let &#123;hostname,port&#125; = this.config; //解构主机名和端口</span><br><span class="line">        server.listen(port,hostname);</span><br><span class="line">        debug(`http://$&#123;hostname&#125;:$&#123;port&#125; start`) //命令行中打印</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">//开启一个服务</span><br><span class="line">let server = new Server();</span><br><span class="line">server.start(); //调用start方法</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>截至到目前位置，简单的服务已经开启了，先来测试下效果吧</p>
+</blockquote>
+<p><img src="https://user-gold-cdn.xitu.io/2018/7/23/164c5db515379d7a?w=1161&amp;h=525&amp;f=png&amp;s=26003" alt=""></p>
+<blockquote>
+<p>完美，控制台打印出了内容，</p>
+</blockquote>
+<h5 id="3、实现handleRequest方法，即处理请求逻辑"><a href="#3、实现handleRequest方法，即处理请求逻辑" class="headerlink" title="3、实现handleRequest方法，即处理请求逻辑"></a>3、实现handleRequest方法，即处理请求逻辑</h5><blockquote>
+<p>列出我们要做什么</p>
+<ul>
+<li>解析url的路径名</li>
+<li>与默认配置中路径(G://cgp-server/public)拼接</li>
+<li>判断是文件还是文件夹还是404</li>
+</ul>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">let stat = util.promisify(fs.stat);//promise化 fs.stat方法</span><br><span class="line"> async  handleRequest(req,res)&#123; //确保这里的this都是实例</span><br><span class="line">        let &#123;pathname&#125; = url.parse(req.url,true); //获取url的路径</span><br><span class="line">        let p = path.join(this.config.dir,pathname); // 可能是G:/cgp-server/public 可能是G://cgp-server/public/index.html</span><br><span class="line">        //1、根据路径 返回不同结果 如果是文件夹 显示文件夹里的内容</span><br><span class="line">        //2、如果是文件 显示文件的内容</span><br><span class="line">        try&#123;</span><br><span class="line">            let statObj=await stat(p);</span><br><span class="line">        &#125;catch (e) &#123;</span><br><span class="line">            //文件不存在情况</span><br><span class="line">            this.sendError(req,res,e)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>try catch用于捕获错误，当文件不存在，调用sendError方法，先来实现这个错误的处理方法</p>
+</blockquote>
+<h5 id="4、文件不存在的逻辑，sendError"><a href="#4、文件不存在的逻辑，sendError" class="headerlink" title="4、文件不存在的逻辑，sendError()"></a>4、文件不存在的逻辑，sendError()</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sendError(req,res,e)&#123;</span><br><span class="line">        debug(util.inspect(e)); //输出错误,util模块提供方法</span><br><span class="line">        res.statusCode = 404;</span><br><span class="line">        res.end(&apos;Not Found&apos;);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>写了这么多了，测试下错误文件能否打印错误<br><img src="https://user-gold-cdn.xitu.io/2018/7/23/164c60af4ed79d64?w=1164&amp;h=711&amp;f=png&amp;s=36083" alt=""></p>
+</blockquote>
+<blockquote>
+<p>测试完美,此时我们应该判断打开的是文件还是目录，并给对应的方法，下面我们开始目录的渲染方法</p>
+</blockquote>
+<h4 id="5、ejs渲染目录列表"><a href="#5、ejs渲染目录列表" class="headerlink" title="5、ejs渲染目录列表"></a>5、ejs渲染目录列表</h4><ul>
+<li><p>先声明一个template模板，挂载到实例上</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">let template = fs.readFileSync(path.join(__dirname,&apos;tmpl.html&apos;),&apos;utf8&apos;); //读取ejs的模板文件</span><br><span class="line">class Server&#123;</span><br><span class="line">    constructor()&#123;</span><br><span class="line">        this.template = template //挂载到实例上</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果是目录，渲染出一个html页展示目录结构</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">if(statObj.isDirectory())&#123;</span><br><span class="line">                //如果是目录 列出目录内容可以点击</span><br><span class="line">                let dirs = await readdir(p); //public下面的目录结构=&gt;[index.html,style.css]</span><br><span class="line">                dirs =dirs.map(dir=&gt;&#123;</span><br><span class="line">                    return &#123;</span><br><span class="line">                        filename:dir,</span><br><span class="line">                        path:path.join(pathname,dir)</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br><span class="line">                //dirs就是要渲染的数据</span><br><span class="line">                //格式如下[&#123;filename:index.html,path:&apos;/index.html&apos;&#125;,&#123;&#123;filename:style.css,path:&apos;&apos;/style.css&#125;&#125;]</span><br><span class="line">                let str =ejs.render(this.template,&#123;dirs&#125;); //ejs渲染方法</span><br><span class="line">                // console.log(str);</span><br><span class="line">                res.setHeader(&apos;Content-Type&apos;, &apos;text/html;charset=utf-8&apos;);</span><br><span class="line">                res.end(str);</span><br><span class="line">            &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>我们来看下tmpl.html模板是怎么写的,<a href="https://ejs.bootcss.com/" target="_blank" rel="noopener">ejs用法</a>,我们只用最简单的，所以应该能看懂</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html lang=&quot;en&quot;&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;meta charset=&quot;UTF-8&quot;&gt;</span><br><span class="line">    &lt;title&gt;Title&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">//循环dirs中的内容到页面中</span><br><span class="line">&lt;% dirs.map(item=&gt;&#123;%&gt;</span><br><span class="line">    &lt;li&gt;&lt;a href=&quot;&lt;%=item.path%&gt;&quot;&gt;&lt;%=item.filename%&gt;&lt;/a&gt;&lt;/li&gt;</span><br><span class="line">&lt;%&#125;)%&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>渲染目录结构，我们已经写完了，测试下看能不能运行</p>
+</blockquote>
+<p><img src="https://user-gold-cdn.xitu.io/2018/7/23/164c79724979531b?w=1334&amp;h=650&amp;f=jpeg&amp;s=80623" alt=""></p>
+<blockquote>
+<p>目前来看，无bug，接下来实现如果是文件的话，直接把文件内容渲染出来</p>
+</blockquote>
+<h4 id="6、文件的渲染方法-即this-sendFile-方法"><a href="#6、文件的渲染方法-即this-sendFile-方法" class="headerlink" title="6、文件的渲染方法,即this.sendFile()方法"></a>6、文件的渲染方法,即this.sendFile()方法</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sendFile(req,res,p,statObj)&#123;</span><br><span class="line">     res.setHeader(&apos;Content-Type&apos;, mime.getType(p) + &apos;;charset=utf-8&apos;);</span><br><span class="line">        fs.createReadStream(p).pipe(res);//可读流pipe到可写流</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>功能已经实现拉，不信我们测下</p>
+</blockquote>
+<p><img src="https://user-gold-cdn.xitu.io/2018/7/23/164c79fb1a9bbf5d?w=1215&amp;h=637&amp;f=png&amp;s=34593" alt=""></p>
+<ul>
+<li>功能已经实现，但我们的要求在增加三个功能</li>
+<li>1、检测是否支持缓存</li>
+<li>2、检测是否支持压缩</li>
+<li>3、检测是否支持范围请求</li>
+</ul>
+<h5 id="6-1增加缓存功能"><a href="#6-1增加缓存功能" class="headerlink" title="6.1增加缓存功能"></a>6.1增加缓存功能</h5><ul>
+<li>修改下sendFile()方法添加三个功能</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sendFile(req,res,p,statObj)&#123;</span><br><span class="line">       // 1、检测是否有缓存</span><br><span class="line">       if(this.cache(req,res,p,statObj))&#123; //如果有缓存</span><br><span class="line">           res.statusCode = 304;</span><br><span class="line">           res.end();</span><br><span class="line">           return</span><br><span class="line">       &#125;</span><br><span class="line">       //2、检测是否支持压缩</span><br><span class="line">           ....</span><br><span class="line">       //3、检测是否有范围请求</span><br><span class="line">           ....</span><br><span class="line"></span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>cache()缓存方法<blockquote>
+<p>缓存有两种方式，强制缓存和协商缓存</p>
+</blockquote>
+</li>
+<li>强制缓存 服务端Catch-Control 、 Expires</li>
+<li>协商缓存 服务端Last-Modified 、Etag</li>
+<li>协商缓存 客户端if-modified-since  if-none-match 与服务端对应</li>
+<li>贴下百度缓存的解构给大家看下<br><img src="https://user-gold-cdn.xitu.io/2018/7/24/164ca173365aef54?w=829&amp;h=522&amp;f=png&amp;s=24716" alt=""><blockquote>
+<p>看完这个图，相信大家应该懂啦。下面开始写缓存方法</p>
+</blockquote>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cache(req,res,p,statObj)&#123;  //实现缓存</span><br><span class="line">        /* 强制缓存 服务端 Cache-Control Expires</span><br><span class="line">            协商缓存  服务端 Last-Modified Etag</span><br><span class="line">            协商缓存  客户端 if-modified-since  if-none-match</span><br><span class="line">            etag ctime + 文件的大小</span><br><span class="line">            Last-modified ctime</span><br><span class="line">            强制缓存</span><br><span class="line">            */</span><br><span class="line">        res.setHeader(&apos;Cache-Control&apos;, &apos;no-cache&apos;);</span><br><span class="line">        res.setHeader(&apos;Expires&apos;, new Date(Date.now() + 10 * 1000).toGMTString());//10秒后重新发请求</span><br><span class="line">        let etag = statObj.ctime.toGMTString() + statObj.size; //文件修改时间和文件大小</span><br><span class="line">        let lastModified = statObj.ctime.toGMTString(); //文件的修改时间</span><br><span class="line">        res.setHeader(&apos;Etag&apos;, etag);</span><br><span class="line">        res.setHeader(&apos;Last-Modified&apos;, lastModified);</span><br><span class="line">        let ifNoneMatch = req.headers[&apos;if-none-match&apos;];</span><br><span class="line">        let ifModifiedSince = req.headers[&apos;if-modified-since&apos;];</span><br><span class="line">        if (etag != ifNoneMatch) &#123; //不相等，不走缓存</span><br><span class="line">            return false;</span><br><span class="line">        &#125;</span><br><span class="line">        if (lastModified != ifModifiedSince) &#123; //同理</span><br><span class="line">            return false;</span><br><span class="line">        &#125;</span><br><span class="line">        return true; //否则走缓存</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>缓存功能写完了，我们测试下设置的头有没有添加上</p>
+</blockquote>
+<p><img src="https://user-gold-cdn.xitu.io/2018/7/24/164ca27a1ea7b284?w=1154&amp;h=881&amp;f=png&amp;s=33747" alt=""></p>
+<blockquote>
+<p>缓存我们就已经实现啦</p>
+</blockquote>
+<h5 id="6-2-实现压缩功能"><a href="#6-2-实现压缩功能" class="headerlink" title="6.2 实现压缩功能"></a>6.2 实现压缩功能</h5><ul>
+<li>node中zlib提供压缩功能，这里就不讲怎么用啦，<a href="http://nodejs.cn/api/zlib.html" target="_blank" rel="noopener">用法戳官网</a></li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">gzip(req,res,p,statObj)&#123;</span><br><span class="line">        // 客户端 Accept-Encoding: gzip, deflate, br</span><br><span class="line">        // 服务端 Content-Encoding: gzip</span><br><span class="line">        let encoding = req.headers[&apos;accept-encoding&apos;]; //获取请求头的接收的压缩格式</span><br><span class="line">        if (encoding) &#123;</span><br><span class="line">            if (encoding.match(/\bgzip\b/)) &#123;</span><br><span class="line">                res.setHeader(&apos;Content-Encoding&apos;, &apos;gzip&apos;)</span><br><span class="line">                return zlib.createGzip();//返回一个gzip的压缩流</span><br><span class="line">            &#125; else if (encoding.match(/\bdeflate\b/)) &#123;</span><br><span class="line">                res.setHeader(&apos;content-encoding&apos;, &apos;deflate&apos;);</span><br><span class="line">                return zlib.createDeflate(); //返回createDeflate的压缩流</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                return false; //否则不支持压缩</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            return false;//否则不支持压缩</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>修改下sendFile()方法<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sendFile(req,res,p,statObj)&#123;</span><br><span class="line">        // 1、检测是否有缓存</span><br><span class="line">        if(this.cache(req,res,p,statObj))&#123; //如果有缓存</span><br><span class="line">            res.statusCode = 304;</span><br><span class="line">            res.end();</span><br><span class="line">            return</span><br><span class="line">        &#125;</span><br><span class="line">        //2、检测是否支持压缩</span><br><span class="line">        res.setHeader(&quot;Content-Type&quot;,mime.getType(p)+&quot;;charset=utf8&quot;);</span><br><span class="line">        let compress =this.gzip(req,res,p,statObj);</span><br><span class="line">        if(compress)&#123; //检测是否压缩。返回的是压缩流</span><br><span class="line">           return fs.createReadStream(p).pipe(compress).pipe(res);</span><br><span class="line">        &#125;else&#123; //不支持压缩直接把文件读出来即可</span><br><span class="line">           return fs.createReadStream(p).pipe(res)</span><br><span class="line">        &#125;</span><br><span class="line">        //3、检测是否有范围请求</span><br><span class="line">            ....</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<blockquote>
+<p>用1.txt文件测试下</p>
+</blockquote>
+<p><img src="https://user-gold-cdn.xitu.io/2018/7/24/164ca32aec8db478?w=570&amp;h=776&amp;f=png&amp;s=26553" alt=""></p>
+<blockquote>
+<p>目前来看都还ok,还剩最后一个功能，实现范围请求</p>
+</blockquote>
+<h5 id="6-3-实现范围请求功能"><a href="#6-3-实现范围请求功能" class="headerlink" title="6.3 实现范围请求功能"></a>6.3 实现范围请求功能</h5><ul>
+<li>客户端发送Range:bytes=0-3</li>
+<li>服务端对应Accept-Range:bytes Content-Range:bytes 0-3/xxx Content-Length:xxx<blockquote>
+<p>由于可能同时会有压缩和范围请求，我们稍微改下前面的代码</p>
+</blockquote>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sendFile(req,res,p,statObj)&#123;</span><br><span class="line">      // 1、检测是否有缓存</span><br><span class="line">          ....</span><br><span class="line">      //2、检测是否支持压缩同时加上范围请求</span><br><span class="line">      res.setHeader(&quot;Content-Type&quot;,mime.getType(p)+&quot;;charset=utf8&quot;);</span><br><span class="line">      let compress =this.gzip(req,res,p,statObj);</span><br><span class="line">      let &#123;start,end&#125; = this.range(req,res,p,statObj); //解构开始和结束的位置</span><br><span class="line">      if(compress)&#123; //检测是否压缩。返回的是压缩流</span><br><span class="line">         return fs.createReadStream(p,&#123;start,end&#125;).pipe(compress).pipe(res);</span><br><span class="line">      &#125;else&#123;</span><br><span class="line">          // res.setHeader(&quot;Content-Type&quot;,mime.getType(p)+&quot;;charset=utf8&quot;);</span><br><span class="line">         return fs.createReadStream(p,&#123;start,end&#125;).pipe(res)</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>range()范围请求的方法</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">range(req, res, statObj, p) &#123;</span><br><span class="line">        //客户端 Range:bytes=0-3</span><br><span class="line">        //服务端 Accept-Range:bytes Content-Range:bytes 0-3/8777</span><br><span class="line"></span><br><span class="line">        let range = req.headers[&apos;range&apos;]; //如果有范围请求</span><br><span class="line">        if (range) &#123;</span><br><span class="line">            let [, start, end] = range.match(/(\d*)-(\d*)/); //解构出开始和结束的位置</span><br><span class="line">            start = start ? Number(start) : 0; //start设置默认值</span><br><span class="line">            end = end ? Number(end) : statObj.size - 1; //end设置默认值</span><br><span class="line">            res.statusCode = 206; //状态码 206范围请求</span><br><span class="line">            res.setHeader(&apos;Accept-Ranges&apos;,&quot;bytes&quot;);</span><br><span class="line">            res.setHeader(&apos;Content-Length&apos;,end-start+1);</span><br><span class="line">            res.setHeader(&apos;Content-Range&apos;,`bytes $&#123;start&#125;-$&#123;end&#125;/$&#123;statObj.size&#125;`);</span><br><span class="line">            return &#123;start,end&#125;;</span><br><span class="line">        &#125;else &#123;</span><br><span class="line">            return &#123;start:0, end:statObj.size&#125;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>基本功能已经实现，测试下代码,我们用curl工具发送请求，<a href="https://www.cnblogs.com/guixiaoming/p/8507268.html" target="_blank" rel="noopener">用法</a></p>
+</blockquote>
+<ul>
+<li>1.txt的内容123456789。我们只想要前4个字符<br><img src="https://user-gold-cdn.xitu.io/2018/7/24/164caf0d3a7bd2bd?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt=""><blockquote>
+<p>测试完美，接下来我们还想实现输入cgp-server ，自动开启浏览器，打开目录。我们需要引用一个模块 yargs</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="7、yargs模块配置命令行的输入"><a href="#7、yargs模块配置命令行的输入" class="headerlink" title="7、yargs模块配置命令行的输入"></a>7、yargs模块配置命令行的输入</h4><ul>
+<li><p><a href="https://www.npmjs.com/package/yargs" target="_blank" rel="noopener">yargs配置用法</a></p>
+</li>
+<li><p>这里我们只用最基本用法，一看就懂，详细了解请看官网</p>
+<h5 id="7-1-npm-link"><a href="#7-1-npm-link" class="headerlink" title="7.1 npm link"></a>7.1 npm link</h5></li>
+<li><p>npm link命令可以将一个任意位置的npm包链接到全局执行环境，从而在任意位置使用命令行都可以直接运行该npm包。</p>
+</li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/7/24/164caf9a82ad5983?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt=""></p>
+<h5 id="7-2-修改下package-json文件"><a href="#7-2-修改下package-json文件" class="headerlink" title="7.2 修改下package.json文件"></a>7.2 修改下package.json文件</h5><p><img src="https://user-gold-cdn.xitu.io/2018/7/24/164cafb8c31ae405?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt=""></p>
+<h5 id="7-3-www-js的配置"><a href="#7-3-www-js的配置" class="headerlink" title="7.3 www.js的配置"></a>7.3 <a href="http://www.js的配置" target="_blank" rel="noopener">www.js的配置</a></h5><h6 id="7-3-1我们把app-js主文件导出给www-js使用"><a href="#7-3-1我们把app-js主文件导出给www-js使用" class="headerlink" title="7.3.1我们把app.js主文件导出给www.js使用"></a>7.3.1我们把app.js主文件导出给<a href="http://www.js使用" target="_blank" rel="noopener">www.js使用</a></h6><p><img src="https://user-gold-cdn.xitu.io/2018/7/24/164cafd7eb878ee0?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt=""></p>
+<h6 id="7-3-2修改www-js文件"><a href="#7-3-2修改www-js文件" class="headerlink" title="7.3.2修改www.js文件"></a>7.3.2修改<a href="http://www.js文件" target="_blank" rel="noopener">www.js文件</a></h6><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#! /usr/bin/env node   //执行命令后会执行 bin/www.js</span><br><span class="line">const yargs = require(&apos;yargs&apos;);</span><br><span class="line">let argv = yargs.option(&apos;port&apos;,&#123; //yargs的基础用法</span><br><span class="line">    alias: &apos;p&apos;, //别名</span><br><span class="line">    default: 3000, //默认值</span><br><span class="line">    description:&apos;this is port&apos;,  //描述</span><br><span class="line">    demand:false // 是否必须</span><br><span class="line">&#125;).option(&apos;hostname&apos;,&#123;</span><br><span class="line">    alias: &apos;h&apos;,</span><br><span class="line">    default: &apos;localhost&apos;,</span><br><span class="line">    description:&apos;this is hostname&apos;,</span><br><span class="line">    demand:false</span><br><span class="line">&#125;).option(&apos;dir&apos;,&#123;</span><br><span class="line">    alias: &apos;d&apos;,</span><br><span class="line">    default: process.cwd(),</span><br><span class="line">    description:&apos;this is cwd&apos;,</span><br><span class="line">    demand:false</span><br><span class="line">&#125;).usage(&apos;cgp-server  [options]&apos; ).argv;</span><br><span class="line"></span><br><span class="line">//开启服务</span><br><span class="line">let Server = require(&apos;../src/app.js&apos;);</span><br><span class="line">new Server(argv).start();</span><br><span class="line"></span><br><span class="line">// 判断是win还是mac平台</span><br><span class="line">let platform = require(&apos;os&apos;).platform();</span><br><span class="line">//开启子进程</span><br><span class="line">let &#123;exec&#125; = require(&apos;child_process&apos;);</span><br><span class="line">//win系统   win32</span><br><span class="line">if(platform===&quot;win32&quot;)&#123;</span><br><span class="line">    exec(`start http://$&#123;argv.hostname&#125;:$&#123;argv.port&#125;`)</span><br><span class="line">&#125;else &#123;</span><br><span class="line">    exec(`open http://$&#123;argv.hostname&#125;:$&#123;argv.port&#125;`)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>简单介绍yargs用法。然后我们输入 cgp-server –help看效果</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">yargs.option(&apos;port&apos;,&#123; //yargs的基础用法</span><br><span class="line">    alias: &apos;p&apos;, //别名</span><br><span class="line">    default: 3000, //默认值</span><br><span class="line">    description:&apos;this is port&apos;,  //描述</span><br><span class="line">    demand:false // 是否必须</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p><img src="https://user-gold-cdn.xitu.io/2018/7/24/164cb06dcddbb3ad?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt=""></p>
+<ul>
+<li>解释下流程，先开启服务，然后判断系统，再然后根据不同的平台执行自动打开浏览器</li>
+</ul>
+<blockquote>
+<p>测试下看能不能启动</p>
+</blockquote>
+<p><img src="https://user-gold-cdn.xitu.io/2018/7/24/164cb0a6e27564c1?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt=""></p>
+<h4 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h4><blockquote>
+<p>如果你能看到这里，真的不容易，点个赞再走吧，<a href="https://github.com/chaiguanpeng/cgp-server" target="_blank" rel="noopener">源码分享给你</a></p>
+</blockquote>
+
+                <hr>
+                
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2018/07/31/koa用法总结/" data-toggle="tooltip" data-placement="top"
+                           title="koa用法总结">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2018/05/29/js数组中filter、map、reduce、find等方法实现的原理/" data-toggle="tooltip" data-placement="top"
+                           title="js数组中filter、map、reduce、find等方法实现的原理">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+
+                
+
+
+                <!--加入新的评论系统-->
+                
+                <!-- 来必力City版安装代码 -->
+                <div id="lv-container" data-id="city" data-uid="MTAyMC8yOTY0OS82MjE3">
+                    <script type="text/javascript">
+                        (function(d, s) {
+                            var j, e = d.getElementsByTagName(s)[0];
+
+                            if (typeof LivereTower === 'function') { return; }
+
+                            j = d.createElement(s);
+                            j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                            j.async = true;
+
+                            e.parentNode.insertBefore(j, e);
+                        })(document, 'script');
+                    </script>
+                    <noscript> 为正常使用来必力评论功能请激活JavaScript</noscript>
+                </div>
+                <!-- City版安装代码已完成 -->
+                
+            </div>
+
+            <div class="hidden-xs col-sm-3 toc-col">
+                <div class="toc-wrap">
+                    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#序言"><span class="toc-text">序言</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#准备工作"><span class="toc-text">准备工作</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#我们的目录解构如下"><span class="toc-text">我们的目录解构如下</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#先写最简单的config-js"><span class="toc-text">先写最简单的config.js</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#核心代码-app-js"><span class="toc-text">核心代码 app.js</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1、引入所需的依赖包"><span class="toc-text">1、引入所需的依赖包</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2、http模块开启服务"><span class="toc-text">2、http模块开启服务</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3、实现handleRequest方法，即处理请求逻辑"><span class="toc-text">3、实现handleRequest方法，即处理请求逻辑</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4、文件不存在的逻辑，sendError"><span class="toc-text">4、文件不存在的逻辑，sendError()</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5、ejs渲染目录列表"><span class="toc-text">5、ejs渲染目录列表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6、文件的渲染方法-即this-sendFile-方法"><span class="toc-text">6、文件的渲染方法,即this.sendFile()方法</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1增加缓存功能"><span class="toc-text">6.1增加缓存功能</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-实现压缩功能"><span class="toc-text">6.2 实现压缩功能</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-3-实现范围请求功能"><span class="toc-text">6.3 实现范围请求功能</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7、yargs模块配置命令行的输入"><span class="toc-text">7、yargs模块配置命令行的输入</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#7-1-npm-link"><span class="toc-text">7.1 npm link</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#7-2-修改下package-json文件"><span class="toc-text">7.2 修改下package.json文件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#7-3-www-js的配置"><span class="toc-text">7.3 www.js的配置</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#7-3-1我们把app-js主文件导出给www-js使用"><span class="toc-text">7.3.1我们把app.js主文件导出给www.js使用</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#7-3-2修改www-js文件"><span class="toc-text">7.3.2修改www.js文件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#结尾"><span class="toc-text">结尾</span></a></li></ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5 class="text-center">
+                        <a href="/tags/">FEATURED TAGS</a>
+                    </h5>
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#node"
+                           title="node">node</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+
+    </div>
+</article>
+
+
+
+
+
+
+
+<!-- Footer -->
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <br>
+                <ul class="list-inline text-center">
+                
+                
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/chaisir-83">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/3039683895/profile?topnav=1&amp;wvr=6&amp;is_all=1">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/chaiguanpeng">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; chaiguanpeng 2018
+                    <br>
+                    <span id="busuanzi_container_site_pv" style="font-size: 12px;">PV: <span id="busuanzi_value_site_pv"></span> Times</span>
+                    <br>
+                    Theme by <a href="https://haojen.github.io/">Haojen Ma</a>
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.js"></script>
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://haojen.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+<script>
+    var _baId = 'ecace9cd4e19049916c87ddd8f347e6e';
+    // Originial
+    var _hmt = _hmt || [];
+    (function() {
+        var hm = document.createElement("script");
+        hm.src = "//hm.baidu.com/hm.js?" + _baId;
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+<!-- swiftype -->
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install','null','2.0.0');
+</script>
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!--wechat title img-->
+<img class="wechat-title-img" src="http://oqsmnfdij.bkt.clouddn.com/images/anthor.JPG2545234.png">
+</body>
+
+</html>

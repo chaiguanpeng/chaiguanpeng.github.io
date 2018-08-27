@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="柴关鹏在 Github 上的个人博客">
+    <meta name="keyword" content="null">
+    <meta name="theme-color" content="#600090">
+    <meta name="msapplication-navbutton-color" content="#600090">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#600090">
+    <link rel="shortcut icon" href="https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-person-128.png">
+    <link rel="alternate" type="application/atom+xml" title="chaiguanpeng" href="/atom.xml">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css">
+    <title>
+        
+        Vue2.0内部指令(下)｜言Sir&#39;s blog
+        
+    </title>
+
+    <link rel="canonical" href="http://haojen.github.io/2017/09/09/Vue2-0内部指令-下/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/blog-style.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+</head>
+
+<style>
+
+    header.intro-header {
+        background-image: url('//oqsmnfdij.bkt.clouddn.com/images/bg_1.jpg')
+    }
+</style>
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="" class="animated fadeIn">
+<!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top " id="nav-top" data-ispost = "true" data-istags="false
+" data-ishome = "false" >
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand animated pulse" href="/">
+                <span class="brand-logo">
+                    chaiguanpeng
+                </span>
+                's Blog
+            </a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <!-- /.navbar-collapse -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+					
+                    
+                        
+							
+                        <li>
+                            <a href="/tags/">tags</a>
+                        </li>
+							
+						
+                    
+					
+					
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+//    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+<!-- Main Content -->
+
+<!--only post-->
+
+
+<img class="wechat-title-img"
+     src="http://oqsmnfdij.bkt.clouddn.com/images/bg_1.jpg">
+
+
+<style>
+    
+    header.intro-header {
+        background-image: url('http://oqsmnfdij.bkt.clouddn.com/images/bg_1.jpg')
+    }
+
+    
+</style>
+
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <div class="post-heading">
+                    <h1>Vue2.0内部指令(下)</h1>
+                    
+                    <span class="meta">
+                         作者 言Sir
+                        <span>
+                          日期 2017-09-09
+                         </span>
+                    </span>
+                    <div class="tags text-center">
+                        
+                        <a class="tag" href="/tags/#js"
+                           title="js">js</a>
+                        
+                        <a class="tag" href="/tags/#vue"
+                           title="vue">vue</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="post-title-haojen">
+        <span>
+            Vue2.0内部指令(下)
+        </span>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <!-- Post Container -->
+            <div class="col-lg-8 col-lg-offset-1 col-sm-9 post-container">
+                <h2 id="第七节-v-bind指令"><a href="#第七节-v-bind指令" class="headerlink" title="第七节:v-bind指令"></a>第七节:v-bind指令</h2><p>  v-bind是处理HTML中的标签属性的，例如我们绑定 <code>&lt;img&gt;</code>上的src进行动态赋值。<br>  实例:<br>  <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;div id=&quot;app&quot;&gt;</span><br><span class="line">    &lt;img v-bind:src=&quot;imgSrc&quot;  width=&quot;200px&quot;&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">var app=new Vue(&#123;</span><br><span class="line">    el:&apos;#app&apos;,</span><br><span class="line">    data:&#123;</span><br><span class="line">          imgSrc:&apos;http://baidu.com/wp-content/uploads/2017/02/vue01-2.jpg&apos;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;)</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure></p>
+<p>v-bind缩写<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;a v-bind:href=&quot;url&quot;&gt;&lt;/a&gt;</span><br><span class="line">&lt;!-- 缩写 --&gt;</span><br><span class="line">&lt;a :href=&quot;url&quot;&gt;&lt;/a&gt;</span><br></pre></td></tr></table></figure></p>
+<p>绑定CSS样式：在绑定CSS样式时,绑定的值必须在vue中的data属性中进行声明。</p>
+<h4 id="1、直接绑定class样式"><a href="#1、直接绑定class样式" class="headerlink" title="1、直接绑定class样式"></a>1、直接绑定class样式</h4>  <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;div id=&quot;app&quot;&gt;</span><br><span class="line">    &lt;div :class=&quot;className&quot;&gt;1、绑定classA&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">var app=new Vue(&#123;</span><br><span class="line">    el:&apos;#app&apos;,</span><br><span class="line">    data:&#123;</span><br><span class="line">          className:&quot;classA&quot;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;)</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="2、绑定classA并进行判断，在isOk为true时显示样式，否则不显示"><a href="#2、绑定classA并进行判断，在isOk为true时显示样式，否则不显示" class="headerlink" title="2、绑定classA并进行判断，在isOk为true时显示样式，否则不显示"></a>2、绑定classA并进行判断，在isOk为true时显示样式，否则不显示</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;div id=&quot;app&quot;&gt;</span><br><span class="line">    &lt;div :class=&quot;&#123;className : isOk&#125;&quot;&gt; 2、绑定classA并进行判断&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">var app=new Vue(&#123;</span><br><span class="line">    el:&apos;#app&apos;,</span><br><span class="line">    data:&#123;</span><br><span class="line">        isOk:true</span><br><span class="line">     &#125;</span><br><span class="line">&#125;)</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="3、绑定class中的数组"><a href="#3、绑定class中的数组" class="headerlink" title="3、绑定class中的数组"></a>3、绑定class中的数组</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;div id=&quot;app&quot;&gt;</span><br><span class="line">    &lt;div :class=&quot;[class1,class2]&quot;&gt;3、绑定class中的数组&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">    var app=new Vue(&#123;</span><br><span class="line">        el:&apos;#app&apos;,</span><br><span class="line">        data:&#123;</span><br><span class="line">            class1:&quot;classA&quot;,</span><br><span class="line">            class2:&quot;classB&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="4、绑定class中使用三元表达式判断"><a href="#4、绑定class中使用三元表达式判断" class="headerlink" title="4、绑定class中使用三元表达式判断"></a>4、绑定class中使用三元表达式判断</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;div id=&quot;app&quot;&gt;</span><br><span class="line">    &lt;div :class=&quot;isOk?classA:classB&quot;&gt;4 绑定class中的三元运算符&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line"> &lt;script&gt;</span><br><span class="line">     var app=new Vue(&#123;</span><br><span class="line">         el:&apos;#app&apos;,</span><br><span class="line">         data:&#123;</span><br><span class="line">              isOk:true,</span><br><span class="line">             classA:&quot;classA&quot;,</span><br><span class="line">             classB:&quot;classB&quot;</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;)</span><br><span class="line"> &lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="5、绑定style"><a href="#5、绑定style" class="headerlink" title="5、绑定style"></a>5、绑定style</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;div id=&quot;app&quot;&gt;</span><br><span class="line">     &lt;div :style=&quot;&#123;color:red,fontSize:font&#125;&quot;&gt;5 绑定style&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line"> &lt;script&gt;</span><br><span class="line">     var app=new Vue(&#123;</span><br><span class="line">         el:&apos;#app&apos;,</span><br><span class="line">         data:&#123;</span><br><span class="line">           red:&quot;red&quot;,</span><br><span class="line">           font:&quot;16px&quot;,</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;)</span><br><span class="line"> &lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="6、用对象绑定style样式"><a href="#6、用对象绑定style样式" class="headerlink" title="6、用对象绑定style样式"></a>6、用对象绑定style样式</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;div id=&quot;app&quot;&gt;</span><br><span class="line">     &lt;div :style=&quot;styleObj&quot;&gt;6、用对象绑定style样式&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line"> &lt;script&gt;</span><br><span class="line">     var app=new Vue(&#123;</span><br><span class="line">         el:&apos;#app&apos;,</span><br><span class="line">         data:&#123;</span><br><span class="line">           styleObj:&#123;</span><br><span class="line">                 color:&apos;green&apos;,</span><br><span class="line">                 fontSize:&apos;24px&apos;</span><br><span class="line">             &#125;</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;)</span><br><span class="line"> &lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="第八节-其他背部指令-v-pre-amp-v-cloak-amp-v-once"><a href="#第八节-其他背部指令-v-pre-amp-v-cloak-amp-v-once" class="headerlink" title="第八节:其他背部指令(v-pre &amp; v-cloak &amp; v-once)"></a>第八节:其他背部指令(v-pre &amp; v-cloak &amp; v-once)</h2><h4 id="1、v-pre指令"><a href="#1、v-pre指令" class="headerlink" title="1、v-pre指令"></a>1、v-pre指令</h4><p>在模板中跳过vue的编译，直接输出原始值。就是在标签中加入v-pre就不会输出vue中的data值了。<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;div v-pre&gt;&#123;&#123;message&#125;&#125;&lt;/div&gt;</span><br></pre></td></tr></table></figure></p>
+<p>这时并不会输出我们的message值,而是直接在网页中显示 <code></code></p>
+<h4 id="2、v-cloak指令"><a href="#2、v-cloak指令" class="headerlink" title="2、v-cloak指令"></a>2、v-cloak指令</h4><p>在vue渲染完指定的DOM后才进行显示。它必须和CSS样式一起使用</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[v-cloak]&#123;</span><br><span class="line">  display:none;</span><br><span class="line">&#125;</span><br><span class="line">&lt;div v-pre&gt;&#123;&#123;message&#125;&#125;&lt;/div&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="3、v-once指令"><a href="#3、v-once指令" class="headerlink" title="3、v-once指令"></a>3、v-once指令</h4><p>在第一次DOM时进行渲染,渲染完成后视为静态内容,跳出以后的渲染过程<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;div&gt;&#123;&#123;message&#125;&#125;&lt;/div&gt;</span><br><span class="line">&lt;div&gt;&lt;input type=&quot;text&quot; v-model=&quot;message&quot;&gt;&lt;/div&gt;</span><br><span class="line">&lt;div v-once&gt;&#123;&#123;message&#125;&#125;&lt;/div&gt;</span><br></pre></td></tr></table></figure></p>
+
+                <hr>
+                
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2017/09/10/Vue2-0内部指令（中）/" data-toggle="tooltip" data-placement="top"
+                           title="Vue2.0内部指令（中）">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2017/08/13/忘了初心-丢了知音/" data-toggle="tooltip" data-placement="top"
+                           title="忘了初心,丢了知音">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+
+                
+
+
+                <!--加入新的评论系统-->
+                
+                <!-- 来必力City版安装代码 -->
+                <div id="lv-container" data-id="city" data-uid="MTAyMC8yOTY0OS82MjE3">
+                    <script type="text/javascript">
+                        (function(d, s) {
+                            var j, e = d.getElementsByTagName(s)[0];
+
+                            if (typeof LivereTower === 'function') { return; }
+
+                            j = d.createElement(s);
+                            j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                            j.async = true;
+
+                            e.parentNode.insertBefore(j, e);
+                        })(document, 'script');
+                    </script>
+                    <noscript> 为正常使用来必力评论功能请激活JavaScript</noscript>
+                </div>
+                <!-- City版安装代码已完成 -->
+                
+            </div>
+
+            <div class="hidden-xs col-sm-3 toc-col">
+                <div class="toc-wrap">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#第七节-v-bind指令"><span class="toc-text">第七节:v-bind指令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、直接绑定class样式"><span class="toc-text">1、直接绑定class样式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2、绑定classA并进行判断，在isOk为true时显示样式，否则不显示"><span class="toc-text">2、绑定classA并进行判断，在isOk为true时显示样式，否则不显示</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3、绑定class中的数组"><span class="toc-text">3、绑定class中的数组</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4、绑定class中使用三元表达式判断"><span class="toc-text">4、绑定class中使用三元表达式判断</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5、绑定style"><span class="toc-text">5、绑定style</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6、用对象绑定style样式"><span class="toc-text">6、用对象绑定style样式</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第八节-其他背部指令-v-pre-amp-v-cloak-amp-v-once"><span class="toc-text">第八节:其他背部指令(v-pre &amp; v-cloak &amp; v-once)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、v-pre指令"><span class="toc-text">1、v-pre指令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2、v-cloak指令"><span class="toc-text">2、v-cloak指令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3、v-once指令"><span class="toc-text">3、v-once指令</span></a></li></ol></li></ol></li></ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5 class="text-center">
+                        <a href="/tags/">FEATURED TAGS</a>
+                    </h5>
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#js"
+                           title="js">js</a>
+                        
+                        <a class="tag" href="/tags/#vue"
+                           title="vue">vue</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+
+    </div>
+</article>
+
+
+
+
+
+
+
+<!-- Footer -->
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <br>
+                <ul class="list-inline text-center">
+                
+                
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/chaisir-83">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/3039683895/profile?topnav=1&amp;wvr=6&amp;is_all=1">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/chaiguanpeng">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; chaiguanpeng 2018
+                    <br>
+                    <span id="busuanzi_container_site_pv" style="font-size: 12px;">PV: <span id="busuanzi_value_site_pv"></span> Times</span>
+                    <br>
+                    Theme by <a href="https://haojen.github.io/">Haojen Ma</a>
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.js"></script>
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://haojen.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+<script>
+    var _baId = 'ecace9cd4e19049916c87ddd8f347e6e';
+    // Originial
+    var _hmt = _hmt || [];
+    (function() {
+        var hm = document.createElement("script");
+        hm.src = "//hm.baidu.com/hm.js?" + _baId;
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+<!-- swiftype -->
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install','null','2.0.0');
+</script>
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!--wechat title img-->
+<img class="wechat-title-img" src="http://oqsmnfdij.bkt.clouddn.com/images/anthor.JPG2545234.png">
+</body>
+
+</html>
