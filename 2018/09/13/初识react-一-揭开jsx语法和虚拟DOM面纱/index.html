@@ -18,11 +18,11 @@
     <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css">
     <title>
         
-        言Sir&#39;s blog
+        初识react(一) 揭开jsx语法和虚拟DOM面纱｜言Sir&#39;s blog
         
     </title>
 
-    <link rel="canonical" href="http://haojen.github.io/archives/2017/07/">
+    <link rel="canonical" href="http://haojen.github.io/2018/09/13/初识react-一-揭开jsx语法和虚拟DOM面纱/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -53,7 +53,7 @@
 <!-- hack iOS CSS :active style -->
 <body ontouchstart="" class="animated fadeIn">
 <!-- Navigation -->
-<nav class="navbar navbar-default navbar-custom navbar-fixed-top " id="nav-top" data-ispost = "false" data-istags="false
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top " id="nav-top" data-ispost = "true" data-istags="false
 " data-ishome = "false" >
     <div class="container-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
@@ -133,365 +133,219 @@
 </script>
 
 <!-- Main Content -->
+
+<!--only post-->
+
+
+<img class="wechat-title-img"
+     src="http://oqsmnfdij.bkt.clouddn.com/images/bg_1.jpg">
+
+
 <style>
-    .intro-header .site-heading {
-        margin: 50px;
+    
+    header.intro-header {
+        background-image: url('http://oqsmnfdij.bkt.clouddn.com/images/bg_1.jpg')
     }
+
+    
 </style>
 
-<!-- Page Header -->
 <header class="intro-header">
     <div class="container">
         <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
-                <div class="site-heading text-center">
-                    <h1>archives</h1>
-                    <span class="subheading">可以根据归档日期检索所有文件</span>
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <div class="post-heading">
+                    <h1>初识react(一) 揭开jsx语法和虚拟DOM面纱</h1>
+                    
+                    <span class="meta">
+                         作者 言Sir
+                        <span>
+                          日期 2018-09-13
+                         </span>
+                    </span>
+                    <div class="tags text-center">
+                        
+                        <a class="tag" href="/tags/#react"
+                           title="react">react</a>
+                        
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <div class="post-title-haojen">
+        <span>
+            初识react(一) 揭开jsx语法和虚拟DOM面纱
+        </span>
+    </div>
 </header>
 
-<!-- Main Content -->
-<div class="container">
-    <div class="row">
-        <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-            <!-- archive list -->
-            
-				
-				
-				
-					
-					
-					<div class="archive archive-year" data-date="2018">
-						<h2 class="archive-title">
-						<span class="fa fa-archive">
-							<a href="/archives/2018">2018</a>
-						</span>
-						</h2>
-				
-				
-					
-					
-					<div class="archive archive-month" data-date="201812">
-						<h3 class="archive-title">
-							<a href="/archives/2018/12">12</a>
-						</h3>
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2018/12/30/about me/">
-                        <h4 class="post-title">
-                            who's 言Sir
-                        </h4>
-                        
-                    </a>
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <!-- Post Container -->
+            <div class="col-lg-8 col-lg-offset-1 col-sm-9 post-container">
+                <h2 id="为什么学习react"><a href="#为什么学习react" class="headerlink" title="为什么学习react"></a>为什么学习react</h2><p>react以声明式、组件化、一次学习随处编写的理念深受广大开发者热爱，其重要程度不言而喻。因此值得我们深入学习，此专题主要分享些react中部分源码解析。</p>
+<h2 id="jsx简介-js-xml"><a href="#jsx简介-js-xml" class="headerlink" title="jsx简介(js +xml)"></a>jsx简介(js +xml)</h2><ul>
+<li>看一段代码，然后在逐一解释</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">const ele = &lt;h1 className=&#123;&quot;box&quot;&#125; style=&#123;&#123;fontSize:&quot;20px&quot;,color:&quot;red&quot;&#125;&#125;&gt;hello&lt;/h1&gt;;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>看不明白没关系，下面我们一步步解释下</p>
+<ul>
+<li>jsx语法中用className代替html中class</li>
+<li>jsx中{}可以存放表达式(有返回值)</li>
+<li>style写法就如上面。放在对象中{color:’red’}<br>这段代码并不是合法的js代码，它是一种被称为jsx的语法扩展，通过它我们就可以很方便的在js代码中书写html片段。<br>本质上，jsx是语法糖，上面这段代码会被babel转换成如下代码</li>
+</ul>
+</blockquote>
+<p><img src="https://user-gold-cdn.xitu.io/2018/7/18/164ac4c48251cdab?w=1506&amp;h=222&amp;f=jpeg&amp;s=25412" alt=""></p>
+<blockquote>
+<p>分析下，对于React.createElement(xxx)中的参数是如何转变出来的，肯定是用一些正则匹配出来的，我们在这里暂不做重点解释。我们重点关注createElement()方法的实现 和render()方法实现</p>
+</blockquote>
+<ul>
+<li>createElement()方法。 -&gt;转变为虚拟DOM</li>
+<li>render()方法。        -&gt;讲虚拟DOM转变真实DOM</li>
+</ul>
+<h2 id="虚拟DOM究竟是啥"><a href="#虚拟DOM究竟是啥" class="headerlink" title="虚拟DOM究竟是啥"></a>虚拟DOM究竟是啥</h2><blockquote>
+<p>我们可以把ele打印出来看看虚拟DOM的样子</p>
+</blockquote>
+<p><img src="https://user-gold-cdn.xitu.io/2018/7/18/164ac5c3557ce0e4?w=1175&amp;h=612&amp;f=png&amp;s=22488" alt=""></p>
+<ul>
+<li>以上就是最简单虚拟DOM的样子，就是一个对象。</li>
+<li>其中最主要关注的是的type(类型)、props(属性)我们关注的重点</li>
+</ul>
+<h2 id="createElement-方法的实现"><a href="#createElement-方法的实现" class="headerlink" title="createElement()方法的实现"></a>createElement()方法的实现</h2><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">let jsxObj = createElement(</span><br><span class="line">    &apos;div&apos;,</span><br><span class="line">    null,</span><br><span class="line">    createElement(</span><br><span class="line">        &apos;h1&apos;,</span><br><span class="line">        &#123;style: &#123;fontSize: &apos;20px&apos;&#125;, className: &apos;box&apos;&#125;,</span><br><span class="line">        &apos;hello&apos;</span><br><span class="line">    ),</span><br><span class="line">     createElement(</span><br><span class="line">        &apos;h1&apos;,</span><br><span class="line">        &#123;style: &#123;fontSize: &apos;20px&apos;&#125;, className: &apos;box&apos;&#125;,</span><br><span class="line">        &apos;world&apos;</span><br><span class="line">    )</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>假设我们已经有上述的结构，我们来实现createElement()方法转化成虚拟DOM。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">&lt;div&gt; &lt;h1 style=&#123;&#123;fontSize:&apos;20px&apos;&#125;&#125; className=&apos;box&apos;&gt;hello&lt;/h1&gt;&lt;/div&gt;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p> 正则匹配到createElement(xxx)中的各个参数的，这里不做重点介绍正则</p>
+</blockquote>
+<ul>
+<li>实现createElement方法</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">function createElement(type, props, ...childrens) &#123;</span><br><span class="line">    return &#123;</span><br><span class="line">        type: type,</span><br><span class="line">        props: &#123;</span><br><span class="line">            ...props,</span><br><span class="line">            children: childrens.length &lt;= 1 ? childrens[0] : childrens</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>有几点需要注意 {…null}不会报错，会返回{}</li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/7/18/164ac97429856450?w=246&amp;h=50&amp;f=png&amp;s=617" alt=""></p>
+<ul>
+<li>打印下jsxObj的结果</li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/7/18/164aca6b24456109?w=1326&amp;h=544&amp;f=png&amp;s=26395" alt=""></p>
+<blockquote>
+<p>完美，其实createElement()转化为虚拟DOM还是比较简单的，下面来实现讲虚拟DOM转化为真实的DOM呢</p>
+</blockquote>
+<h2 id="render-方法的实现"><a href="#render-方法的实现" class="headerlink" title="render()方法的实现"></a>render()方法的实现</h2><blockquote>
+<p>我们需要这样调用render方法。 render(jsxObj,container) 。jsxObj-&gt; 虚拟的DOM对象 、container-&gt;挂载到的节点</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">function render(jsxObj, container) &#123;</span><br><span class="line">    //解构types和props解构props中的children</span><br><span class="line">    let &#123;type, props&#125; = jsxObj, &#123;children&#125; = props;    </span><br><span class="line">    let newElement = document.createElement(type);//创建type类型的DOM元素</span><br><span class="line">    for (let attr in props) &#123; //循环props</span><br><span class="line">        if (!props.hasOwnProperty(attr)) break;</span><br><span class="line">        switch (attr) &#123;</span><br><span class="line">            case &apos;className&apos;: //attr为className,增加class=&quot;xxx&quot;属性</span><br><span class="line">                newElement.setAttribute(&apos;class&apos;, props[attr]);</span><br><span class="line">                break;</span><br><span class="line">            case &apos;style&apos;: //attr为styel，js实现增加样式</span><br><span class="line">                let styleOBJ = props[&apos;style&apos;];</span><br><span class="line">                for (let key in styleOBJ) &#123;</span><br><span class="line">                    if (styleOBJ.hasOwnProperty(key)) &#123;</span><br><span class="line">                        newElement[&apos;style&apos;][key] = styleOBJ[key];</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                break;</span><br><span class="line">            case &apos;children&apos;:</span><br><span class="line">                let childrenAry = props[&apos;children&apos;];</span><br><span class="line">                //childrenAry为数组-&gt; childrenAry,为str的话 -&gt;[str] ,为空的话-&gt; [].统一转变数组便于循环</span><br><span class="line">                childrenAry = childrenAry instanceof Array ? childrenAry : (childrenAry ? [childrenAry] : []);</span><br><span class="line">                childrenAry.forEach(item =&gt; &#123;</span><br><span class="line">                    if (typeof item === &apos;string&apos;) &#123;</span><br><span class="line">                        //文本节点，直接增加到元素中</span><br><span class="line">                        newElement.appendChild(document.createTextNode(item));</span><br><span class="line">                    &#125; else &#123;</span><br><span class="line">                        //新的JSX元素，递归调用RENDER，只不过此时的容器是当前新创建的newElement</span><br><span class="line">                        render(item, newElement);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br><span class="line">            default:</span><br><span class="line">                newElement.setAttribute(attr, props[attr]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    container.appendChild(newElement);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>代码注释还算清晰，相信大家看的懂，把我认为不好理解的给大家解释下</li>
+<li>props解构为 {className:’xxx’,children:array or string or 空},空代表啥也没有。比如 <code>&lt;h1&gt;&lt;/h1&gt;</code></li>
+<li>props.hasOwnProperty(attr)可以忽略掉继承过来的属性，即 如果是继承过来的属性，会返回false。为了严谨写上</li>
+<li>childrenAry可能是array or string or 空。我们统一都变成数组，便于后面我们遍历元素<blockquote>
+<p>写了这么多，来测试下吧</p>
+</blockquote>
+</li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/7/18/164acbf6b68e9247?w=1824&amp;h=441&amp;f=png&amp;s=19600" alt=""></p>
+<blockquote>
+<p>完美，到目前来看一切正常。附上源码。<br><a href="https://github.com/chaiguanpeng/react-code-analysis" target="_blank" rel="noopener">源码直通车</a></p>
+</blockquote>
+
+                <hr>
+                
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2018/12/30/about me/" data-toggle="tooltip" data-placement="top"
+                           title="who's 言Sir">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2018/08/27/初识react-二-实现一个简版的redux/" data-toggle="tooltip" data-placement="top"
+                           title="初识react(二) 实现一个简版的redux">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+
+                
+
+
+                <!--加入新的评论系统-->
+                
+                <!-- 来必力City版安装代码 -->
+                <div id="lv-container" data-id="city" data-uid="MTAyMC8yOTY0OS82MjE3">
+                    <script type="text/javascript">
+                        (function(d, s) {
+                            var j, e = d.getElementsByTagName(s)[0];
+
+                            if (typeof LivereTower === 'function') { return; }
+
+                            j = d.createElement(s);
+                            j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                            j.async = true;
+
+                            e.parentNode.insertBefore(j, e);
+                        })(document, 'script');
+                    </script>
+                    <noscript> 为正常使用来必力评论功能请激活JavaScript</noscript>
                 </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-				
-					
-					</div><!--month-->
-					
-					
-					<div class="archive archive-month" data-date="201809">
-						<h3 class="archive-title">
-							<a href="/archives/2018/09">09</a>
-						</h3>
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2018/09/13/初识react-一-揭开jsx语法和虚拟DOM面纱/">
-                        <h4 class="post-title">
-                            初识react(一) 揭开jsx语法和虚拟DOM面纱
-                        </h4>
-                        
-                    </a>
+                <!-- City版安装代码已完成 -->
+                
+            </div>
+
+            <div class="hidden-xs col-sm-3 toc-col">
+                <div class="toc-wrap">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#为什么学习react"><span class="toc-text">为什么学习react</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jsx简介-js-xml"><span class="toc-text">jsx简介(js +xml)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#虚拟DOM究竟是啥"><span class="toc-text">虚拟DOM究竟是啥</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#createElement-方法的实现"><span class="toc-text">createElement()方法的实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#render-方法的实现"><span class="toc-text">render()方法的实现</span></a></li></ol>
                 </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-				
-					
-					</div><!--month-->
-					
-					
-					<div class="archive archive-month" data-date="201808">
-						<h3 class="archive-title">
-							<a href="/archives/2018/08">08</a>
-						</h3>
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2018/08/27/初识react-二-实现一个简版的redux/">
-                        <h4 class="post-title">
-                            初识react(二) 实现一个简版的redux
-                        </h4>
-                        
-                    </a>
-                </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-				
-					
-					</div><!--month-->
-					
-					
-					<div class="archive archive-month" data-date="201807">
-						<h3 class="archive-title">
-							<a href="/archives/2018/07">07</a>
-						</h3>
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2018/07/31/koa用法总结/">
-                        <h4 class="post-title">
-                            koa用法总结
-                        </h4>
-                        
-                    </a>
-                </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2018/07/24/实现自己的cgp-server静态服务/">
-                        <h4 class="post-title">
-                            实现自己的cgp-server静态服务
-                        </h4>
-                        
-                    </a>
-                </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-				
-					
-					</div><!--month-->
-					
-					
-					<div class="archive archive-month" data-date="201805">
-						<h3 class="archive-title">
-							<a href="/archives/2018/05">05</a>
-						</h3>
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2018/05/29/js数组中filter、map、reduce、find等方法实现的原理/">
-                        <h4 class="post-title">
-                            js数组中filter、map、reduce、find等方法实现的原理
-                        </h4>
-                        
-                    </a>
-                </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-					
-					</div><!--month-->
-					</div><!--year-->
-					
-					
-					
-					<div class="archive archive-year" data-date="2017">
-						<h2 class="archive-title">
-						<span class="fa fa-archive">
-							<a href="/archives/2017">2017</a>
-						</span>
-						</h2>
-				
-				
-					
-					
-					<div class="archive archive-month" data-date="201709">
-						<h3 class="archive-title">
-							<a href="/archives/2017/09">09</a>
-						</h3>
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2017/09/11/Vue2-0-内部指令-上/">
-                        <h4 class="post-title">
-                            Vue2.0 内部指令(上)
-                        </h4>
-                        
-                    </a>
-                </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2017/09/10/Vue2-0内部指令（中）/">
-                        <h4 class="post-title">
-                            Vue2.0内部指令（中）
-                        </h4>
-                        
-                    </a>
-                </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2017/09/09/Vue2-0内部指令-下/">
-                        <h4 class="post-title">
-                            Vue2.0内部指令(下)
-                        </h4>
-                        
-                    </a>
-                </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-				
-					
-					</div><!--month-->
-					
-					
-					<div class="archive archive-month" data-date="201708">
-						<h3 class="archive-title">
-							<a href="/archives/2017/08">08</a>
-						</h3>
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2017/08/13/忘了初心-丢了知音/">
-                        <h4 class="post-title">
-                            忘了初心,丢了知音
-                        </h4>
-                        
-                    </a>
-                </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2017/08/07/友人以上、恋人未满/">
-                        <h4 class="post-title">
-                            友人以上、恋人未满
-                        </h4>
-                        
-                    </a>
-                </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2017/08/04/林夕梦/">
-                        <h4 class="post-title">
-                            林夕梦
-                        </h4>
-                        
-                    </a>
-                </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-				
-					
-					</div><!--month-->
-					
-					
-					<div class="archive archive-month" data-date="201707">
-						<h3 class="archive-title">
-							<a href="/archives/2017/07">07</a>
-						</h3>
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2017/07/31/When-We-Two-Parted/">
-                        <h4 class="post-title">
-                            When We Two Parted
-                        </h4>
-                        
-                    </a>
-                </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2017/07/25/闲谈jsonp跨域请求/">
-                        <h4 class="post-title">
-                            闲谈jquery中jsonp跨域请求
-                        </h4>
-                        
-                    </a>
-                </div>
-				<hr>
-				</div>
-            
-				
-				
-				
-				
-				<div class="one-tag-list">
-                <div class="post-preview">
-                    <a href="/2017/07/20/愿有一人-不负深情亦不负卿/">
-                        <h4 class="post-title">
-                            愿有一人，不负深情亦不负卿
-                        </h4>
-                        
-                    </a>
-                </div>
-				<hr>
-				</div>
-            
+            </div>
         </div>
+
+        <div class="row">
+            <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5 class="text-center">
+                        <a href="/tags/">FEATURED TAGS</a>
+                    </h5>
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#react"
+                           title="react">react</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+
     </div>
-</div>
+</article>
+
+
+
+
+
+
 
 <!-- Footer -->
 <!-- Footer -->
