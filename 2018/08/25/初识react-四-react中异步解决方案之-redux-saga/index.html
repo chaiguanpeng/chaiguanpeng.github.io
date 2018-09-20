@@ -18,11 +18,11 @@
     <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css">
     <title>
         
-        初识react(三)在 react中使用redux来实现简版计数器｜言Sir&#39;s blog
+        初识react(四) react中异步解决方案之 redux-saga｜言Sir&#39;s blog
         
     </title>
 
-    <link rel="canonical" href="http://haojen.github.io/2018/09/18/初识react-三-在-react中使用redux来实现简版计数器/">
+    <link rel="canonical" href="http://haojen.github.io/2018/08/25/初识react-四-react中异步解决方案之-redux-saga/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -155,12 +155,12 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
                 <div class="post-heading">
-                    <h1>初识react(三)在 react中使用redux来实现简版计数器</h1>
+                    <h1>初识react(四) react中异步解决方案之 redux-saga</h1>
                     
                     <span class="meta">
                          作者 言Sir
                         <span>
-                          日期 2018-09-18
+                          日期 2018-08-25
                          </span>
                     </span>
                     <div class="tags text-center">
@@ -175,7 +175,7 @@
     </div>
     <div class="post-title-haojen">
         <span>
-            初识react(三)在 react中使用redux来实现简版计数器
+            初识react(四) react中异步解决方案之 redux-saga
         </span>
     </div>
 </header>
@@ -186,92 +186,90 @@
         <div class="row">
             <!-- Post Container -->
             <div class="col-lg-8 col-lg-offset-1 col-sm-9 post-container">
-                <ul>
-<li><a href="https://juejin.im/post/5b83be86f265da432a6ae5df" target="_blank" rel="noopener">初识react(二) 实现一个简版的html+redux.js的demo</a><blockquote>
-<p>上篇文章已经把redux核心概念讲明白了，这里就不在废话啦，不了解的可以先去回顾下，接下来我们讲解下在react中如何使用redux，来实现一个简单计数器</p>
+                <p><img src="https://user-gold-cdn.xitu.io/2018/9/19/165efc712821a836?w=800&amp;h=167&amp;f=png&amp;s=21769" alt=""></p>
+<h3 id="回顾"><a href="#回顾" class="headerlink" title="回顾"></a>回顾</h3><ul>
+<li><a href="https://juejin.im/post/5b4ee916f265da0f563dd184" target="_blank" rel="noopener">初识react(一) 揭开jsx语法和虚拟DOM面纱</a></li>
+<li><a href="https://juejin.im/post/5b83be86f265da432a6ae5df" target="_blank" rel="noopener">初识react(二) 实现一个简版的html+redux.js的demo</a></li>
+<li><a href="https://juejin.im/post/5ba06cb6e51d450e9e440032" target="_blank" rel="noopener">初识react(三)在 react中使用redux来实现简版计数器</a></li>
+</ul>
+<blockquote>
+<p>今天demo是实现一个异步的计算器，探究redux-saga工作流程</p>
+</blockquote>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><ul>
+<li>redux-saga 是一个 redux 的中间件，而中间件的作用是为 redux 提供额外的功能。</li>
+<li>由于在 reducers 中的所有操作都是同步的并且是纯粹的，即 reducer 都是纯函数，纯函数是指一个函数的返回结果只依赖于它的参数，并且在执行过程中不会对外部产生副作用，即给它传什么，就吐出什么。</li>
+<li>但是在实际的应用开发中，我们希望做一些异步的（如Ajax请求）且不纯粹的操作（如改变外部的状态），这些在函数式编程范式中被称为“副作用”。<blockquote>
+<p>redux-saga 就是用来处理上述副作用（异步任务）的一个中间件。它是一个接收事件，并可能触发新事件的过程管理者，为你的应用管理复杂的流程。</p>
 </blockquote>
 </li>
 </ul>
-<h3 id="先把目录结构搭好"><a href="#先把目录结构搭好" class="headerlink" title="先把目录结构搭好"></a>先把目录结构搭好</h3><p><img src="https://user-gold-cdn.xitu.io/2018/9/18/165eab7d29254609?w=360&amp;h=181&amp;f=png&amp;s=2476" alt=""></p>
+<h3 id="redux-saga工作原理"><a href="#redux-saga工作原理" class="headerlink" title="redux-saga工作原理"></a>redux-saga工作原理</h3><ul>
+<li>对generator不了解的，看下<a href="http://www.ruanyifeng.com/blog/2015/04/generator.html" target="_blank" rel="noopener">阮一峰 generator讲解</a></li>
+<li>sages 采用 Generator 函数来 yield Effects（包含指令的文本对象）。</li>
+<li>Generator 函数的作用是可以暂停执行，再次执行的时候从上次暂停的地方继续执行</li>
+<li>Effect 是一个简单的对象，该对象包含了一些给 middleware 解释执行的信息。</li>
+<li>你可以通过使用 effects API 如 fork，call，take，put，cancel 等来创建 Effect。</li>
+</ul>
+<h3 id="redux-saga分类"><a href="#redux-saga分类" class="headerlink" title="redux-saga分类"></a>redux-saga分类</h3><ul>
+<li>worker saga 做左右的工作，如调用API，进行异步请求，获取异步封装结果</li>
+<li>watcher saga 监听被dispatch的actions,当接受到action或者知道其被触发时，调用worker执行任务</li>
+<li>root saga 立即启动saga的唯一入口</li>
+</ul>
 <blockquote>
-<p>下面我们讲解下每个文件的作用，然后在一个一个实现</p>
+<p>基本介绍已经讲完了，当做完一个demo后，回头再看<a href="https://redux-saga-in-chinese.js.org/" target="_blank" rel="noopener">redux-saga官网</a>或者上面讲解，可能会有更深的体会</p>
+</blockquote>
+<h3 id="使用redux-saga实现一个异步计数器"><a href="#使用redux-saga实现一个异步计数器" class="headerlink" title="使用redux-saga实现一个异步计数器"></a>使用redux-saga实现一个异步计数器</h3><blockquote>
+<p>由于目录结构跟上篇文章一样，在这里就只把变动的部分单独抽离出来讲解</p>
 <ul>
-<li>actions-&gt;counter.js存放计数器的动作</li>
-<li>reducers-&gt;index.js是主入口文件，因为可能有好多个reducer。</li>
-<li>reducers-&gt;counter.js存放计数器的reducer</li>
-<li>action-types.js 存放宏，玩游戏的肯定知道，保存动作的类型</li>
-<li>store-&gt;index.js 是整个store对外暴露的入口文件<br>读过上篇文章后，对这种目录结构可能还不清楚具体的作用，但是对这些redux中概念肯定已经明白，下面我们一个一个文件开始讲解</li>
+<li><a href="https://juejin.im/post/5ba06cb6e51d450e9e440032?utm_source=gold_browser_extension" target="_blank" rel="noopener">先回顾下初识react(三)在 react中使用redux来实现简版计数器</a></li>
 </ul>
 </blockquote>
-<h3 id="一、编写store部分"><a href="#一、编写store部分" class="headerlink" title="一、编写store部分"></a>一、编写store部分</h3><h4 id="1、编写最简单的store-action-types-js文件"><a href="#1、编写最简单的store-action-types-js文件" class="headerlink" title="1、编写最简单的store/action-types.js文件"></a>1、编写最简单的store/action-types.js文件</h4><ul>
-<li>是一个宏文件，保存计数器动作的类型，说白了就是加、减操作。贴代码看的更具体</li>
+<h4 id="1、修改actions-counter-js"><a href="#1、修改actions-counter-js" class="headerlink" title="1、修改actions/counter.js"></a>1、修改actions/counter.js</h4><ul>
+<li>增加一个异步记数的动作类型。</li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// action-types</span><br><span class="line">export const INCREMENT = &quot;INCREMENT&quot;;</span><br><span class="line">export const DECREMENT = &quot;DECREMENT&quot;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">import * as Types from &quot;../action-types&quot;;</span><br><span class="line">let actions =&#123;</span><br><span class="line">    add(num)&#123;</span><br><span class="line">        return&#123;type:Types.INCREMENT,count:num&#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    minus(num)&#123;</span><br><span class="line">        return&#123;type:Types.DECREMENT,count:num&#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    //增加了一个异步记数的类型，用于在counter.js中派发动作</span><br><span class="line">    async(num)&#123;</span><br><span class="line">        return &#123;type:Types.ADD_ASYNC&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">export default actions;</span><br></pre></td></tr></table></figure>
+<h4 id="2、重点，在src目录下增加saga-js文件"><a href="#2、重点，在src目录下增加saga-js文件" class="headerlink" title="2、重点，在src目录下增加saga.js文件"></a>2、重点，在src目录下增加saga.js文件</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">//takeEvery=&gt;负责监听  put=&gt;派发动作   call=&gt;告诉saga，执行delay，并传入1000作为参数</span><br><span class="line">import &#123;takeEvery,put,call&#125; from &quot;redux-saga/effects&quot;;</span><br><span class="line">import * as Types from &quot;./store/action-types&quot;;</span><br><span class="line">const delay = ms=&gt;new Promise((resolve,reject)=&gt;&#123;</span><br><span class="line">    setTimeout(()=&gt;&#123;</span><br><span class="line">        resolve()</span><br><span class="line">    &#125;,ms)</span><br><span class="line">&#125;)</span><br><span class="line">//saga分为三类 1、rootsaga 2、监听saga 3、worker干活的saga</span><br><span class="line">function* add() &#123;</span><br><span class="line">    yield call(delay,1000);</span><br><span class="line">    //就是指挥saga中间件向仓库派发动作</span><br><span class="line">    yield put(&#123;type:Types.INCREMENT,count:10&#125;);</span><br><span class="line">&#125;</span><br><span class="line">function* watchAdd() &#123;</span><br><span class="line">    //监听派发给仓库的动作，如果动作类型匹配的话，会执行对应的监听生成器</span><br><span class="line">    yield takeEvery(Types.ADD_ASYNC,add)</span><br><span class="line">&#125;</span><br><span class="line">export default function* rootSaga() &#123;</span><br><span class="line">    yield watchAdd()</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>宏文件不是必须的，但是它好处是结构清晰，一目了然可以看到计数器所有动作的类型</p>
+<p>还记得上面说的,rudux-saga分类,root saga -&gt;watcher saga -&gt; worker saga。在这段代码中将会体现，代码我们从上往下看。</p>
 </blockquote>
-<h4 id="2、编写reducers-counter-js文件"><a href="#2、编写reducers-counter-js文件" class="headerlink" title="2、编写reducers/counter.js文件"></a>2、编写reducers/counter.js文件</h4><ul>
-<li>是一个计数器的reducer，reducers目录下可能有很多个reducer,我们先写一个</li>
+<h5 id="2-1-saga工作流程-代码从下往上看"><a href="#2-1-saga工作流程-代码从下往上看" class="headerlink" title="2.1 saga工作流程(代码从下往上看)"></a>2.1 saga工作流程(代码从下往上看)</h5><ul>
+<li>默认导出了rootSaga,即saga的入口文件</li>
+<li>watcher saga  -&gt;wactchAdd 负责监听派发的动作，如果动作类型匹配，执行对应的 worker saga</li>
+<li>上面的worker saga指代的是 add函数</li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">import * as Types from &quot;../action-types&quot;; //引入动作类型</span><br><span class="line">let initState = &#123;  //声明一个初始的状态</span><br><span class="line">    number:0</span><br><span class="line">&#125;;</span><br><span class="line">function counter(state = initState, action) &#123;   //接收state和action两个参数,并给state赋予初始值</span><br><span class="line">    switch (action.type) &#123;  //判断动作类型</span><br><span class="line">        case Types.INCREMENT: //action类似这种结构&#123;type:&apos;INCREMENT&apos;，count:5&#125;</span><br><span class="line">            return &#123;number:state.number+action.count&#125;;</span><br><span class="line">        case Types.DECREMENT:</span><br><span class="line">            return &#123;number:state.number-action.count&#125;;</span><br><span class="line">    &#125;</span><br><span class="line">    return state    </span><br><span class="line">&#125;</span><br><span class="line">export default counter</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>跟我们上篇文章写的reducer一模一样，只不过我们把它抽离出来，让结构清晰</p>
+<h5 id="2-2-redux-saga-effects-副作用"><a href="#2-2-redux-saga-effects-副作用" class="headerlink" title="2.2 redux-saga/effects 副作用"></a>2.2 redux-saga/effects 副作用</h5><blockquote>
+<p>在实际的应用开发中，我们希望做一些异步的（如Ajax请求）且不纯粹的操作（如改变外部的状态），这些在函数式编程范式中被称为“副作用”。</p>
 </blockquote>
-<h4 id="3、编写reducers-index-js文件"><a href="#3、编写reducers-index-js文件" class="headerlink" title="3、编写reducers/index.js文件"></a>3、编写reducers/index.js文件</h4><ul>
-<li>由于我们只有一个计数器的reducer，所以默认导出就可以。当有多个reducer，会在这个文件进行合并，后面再讲。</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">import counter from &quot;./counter&quot;; //默认导入reducer</span><br><span class="line">export default counter      //默认导出</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>在啰嗦一句，主要是为了以后方便扩展多个reducer，所以才会有reducers/index.js这个主文件</p>
-</blockquote>
-<h4 id="4、-编写actions-counters-js"><a href="#4、-编写actions-counters-js" class="headerlink" title="4、 编写actions/counters.js"></a>4、 编写actions/counters.js</h4><ul>
-<li>把派发的动作抽离出来，用于来组件中调用</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">import * as Types from &quot;../action-types&quot;; //引入宏</span><br><span class="line">let actions = &#123;</span><br><span class="line">    add(num)&#123; //add方法会在组件内部调用，返回action对象</span><br><span class="line">        return &#123;type:Types.INCREMENT,count:num&#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    minus(num)&#123;</span><br><span class="line">        return &#123;type:Types.DECREMENT,count:num&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">export default actions</span><br></pre></td></tr></table></figure>
-<h4 id="5、编写store-index-js，仓库的主文件"><a href="#5、编写store-index-js，仓库的主文件" class="headerlink" title="5、编写store/index.js，仓库的主文件"></a>5、编写store/index.js，仓库的主文件</h4><ul>
-<li>这个文件主要用于导出store，提供给组件使用</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">import &#123;createStore&#125; from &apos;redux&apos;;</span><br><span class="line">import reducer from &quot;./reducers&quot;</span><br><span class="line">let store = createStore(reducer); //创建store</span><br><span class="line">export default store;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>截止到目前为止，store文件已经全部写完。下面我们开始写组件部分，让仓库中数据给组件使用</p>
-</blockquote>
-<h3 id="二、组件调用部分"><a href="#二、组件调用部分" class="headerlink" title="二、组件调用部分"></a>二、组件调用部分</h3><h4 id="1、编写react的主入口文件，即-src-index-js"><a href="#1、编写react的主入口文件，即-src-index-js" class="headerlink" title="1、编写react的主入口文件，即 src/index.js"></a>1、编写react的主入口文件，即 src/index.js</h4><ul>
-<li>使用react-redux库，来实现store和组件之间的通信</li>
-<li>react-redux提供了2个核心API， Provider 提供  connect 链接</li>
-<li>Provider是一个组件，在react入口文件中用于提供store。</li>
-<li>connect含义是，在react组件内部连接store，进而实现组件与redux之间通信</li>
+<ul>
+<li>takeEvery=&gt;负责监听，监听派发给仓库的动作，如果动作类型匹配的话，会执行对应的监听生成器-&gt;add</li>
+<li>put=&gt;派发动作，可以理解为dispatch</li>
+<li>call=&gt;告诉saga,执行delay函数，并把参数传过去。注意: delay函数必须返回promise</li>
 </ul>
 <blockquote>
-<p>怪我不能给大家讲明白，我们还是看代码逐句解释</p>
+<p>讲到这里，流程就说完了，接下来在store中执行rootSaga</p>
 </blockquote>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">import React from &apos;react&apos;;</span><br><span class="line">import ReactDOM from &apos;react-dom&apos;;</span><br><span class="line">import Counter from &quot;./components/Counter&quot;;</span><br><span class="line">import store from &quot;./store&quot;;</span><br><span class="line">//引入react-redux中的Provider组件，用于</span><br><span class="line">import &#123;Provider&#125; from &quot;react-redux&quot;;</span><br><span class="line"></span><br><span class="line">ReactDOM.render(</span><br><span class="line">    &lt;Provider store = &#123;store&#125;&gt;</span><br><span class="line">        &lt;div&gt;</span><br><span class="line">            &lt;Counter /&gt;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">    &lt;/Provider&gt;, document.getElementById(&apos;root&apos;));</span><br></pre></td></tr></table></figure>
-<h4 id="2、编写Counter组件"><a href="#2、编写Counter组件" class="headerlink" title="2、编写Counter组件"></a>2、编写Counter组件</h4><ul>
-<li>组件中用到connect方法，实现组件与redux之间通信，connect方法接受2参数。connect(mapStateToProps,actions)(Counter)</li>
-<li>把store/actions.js导出的对象绑定到组件的属性中，组件内部可以通过this.props拿到对应的actions</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">import React from &quot;react&quot;;</span><br><span class="line">import store from &quot;../store&quot;;</span><br><span class="line">import * as Types from &quot;../store/action-types&quot;</span><br><span class="line">//生成action的对象的方法叫actionCreator</span><br><span class="line">import actions from &quot;../store/actions/counter&quot;;</span><br><span class="line">import &#123;connect&#125; from &quot;react-redux&quot;;</span><br><span class="line">class Counter extends React.Component &#123;</span><br><span class="line">    render() &#123;</span><br><span class="line">        console.log(this.props);</span><br><span class="line">        return (</span><br><span class="line">            &lt;div&gt;</span><br><span class="line">             &lt;div&gt;&#123;this.props.number&#125;&lt;/div&gt;</span><br><span class="line">                &lt;button onClick=&#123;()=&gt;&#123;</span><br><span class="line">                    this.props.add(5)</span><br><span class="line">                &#125;&#125;&gt;+&lt;/button&gt;</span><br><span class="line">                &lt;button onClick=&#123;()=&gt;&#123;</span><br><span class="line">                    this.props.minus(1)</span><br><span class="line">                &#125;&#125;&gt;-&lt;/button&gt;</span><br><span class="line">            &lt;/div&gt;</span><br><span class="line">            )</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">let mapStateToProps = (state)=&gt;&#123; //state代表的store.getState()</span><br><span class="line">    return &#123;...state&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">export default connect(mapStateToProps,actions)(Counter)</span><br></pre></td></tr></table></figure>
+<h4 id="3、在store-index引入rootSaga"><a href="#3、在store-index引入rootSaga" class="headerlink" title="3、在store/index引入rootSaga"></a>3、在store/index引入rootSaga</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">import &#123;createStore,applyMiddleware&#125; from &apos;redux&apos;;</span><br><span class="line">import createSagaMiddleware from &quot;redux-saga&quot;; //引入redux-saga</span><br><span class="line">import  rootSaga from &quot;../saga&quot; //引入我们上面写好的rootSaga</span><br><span class="line">import reducer from &quot;./reducers&quot;</span><br><span class="line">let sagaMiddleware =createSagaMiddleware(); //执行得到saga中间件</span><br><span class="line">let store = createStore(reducer,applyMiddleware(sagaMiddleware)); //使用中间件</span><br><span class="line">sagaMiddleware.run(rootSaga); //开始执行rootSaga</span><br><span class="line">export  default  store;</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>到此为止，我们基本实现一个计数器功能，先来测试下，然后在梳理下整个工作流程</p>
+<p>对于redux中间件没有讲解，这部分内容涉及东西比较多，也不太好理解，写这个react系列目的是尽可能简单的让所有人理解，想看所有的redux源码解析，底部会留下所有总结的代码仓库。</p>
 </blockquote>
-<p><img src="https://user-gold-cdn.xitu.io/2018/9/18/165eb814d65aa598?w=382&amp;h=399&amp;f=png&amp;s=7310" alt=""></p>
-<blockquote>
-<p>测试点击增加记数功能</p>
-</blockquote>
-<p><img src="https://user-gold-cdn.xitu.io/2018/9/18/165eb83c1c9dee83?w=619&amp;h=446&amp;f=png&amp;s=9138" alt=""></p>
-<blockquote>
-<p>功能基本实现，可能对整个流程并不清楚怎么实现的，下面来梳理下整个工作流程</p>
-</blockquote>
-<h3 id="react-redux整个流程分析"><a href="#react-redux整个流程分析" class="headerlink" title="react-redux整个流程分析"></a>react-redux整个流程分析</h3><ul>
-<li>当点击按钮触发 this.props.add(5)，返回的action即{type:Types.INCREMENT,count:num}，会在connect内部被派发</li>
-<li>派发动作后被reducer处理，然后返回新的状态</li>
-<li>页面刷新<blockquote>
-<p>最后来张图结尾</p>
-</blockquote>
+<h4 id="4、在counter-js组件中派发这个异步动作"><a href="#4、在counter-js组件中派发这个异步动作" class="headerlink" title="4、在counter.js组件中派发这个异步动作"></a>4、在counter.js组件中派发这个异步动作</h4><ul>
+<li>代码跟上篇文章一模一样，只是增加了按钮实现异步操作<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">import React, &#123;Component&#125; from &apos;react&apos;;</span><br><span class="line">import ReactDOM from &apos;react-dom&apos;;</span><br><span class="line">import &#123;connect&#125; from &quot;react-redux&quot;;</span><br><span class="line">import actions from &quot;../store/actions/counter&quot;</span><br><span class="line">class Counter extends Component &#123;</span><br><span class="line">    render() &#123;</span><br><span class="line">        console.log(this.props);</span><br><span class="line">        return(</span><br><span class="line">            &lt;div&gt;</span><br><span class="line">                &lt;h1&gt;&#123;this.props.number&#125;&lt;/h1&gt;</span><br><span class="line">                &lt;button onClick=&#123;()=&gt;&#123;this.props.add(5)&#125;&#125;&gt;+&lt;/button&gt;</span><br><span class="line">                &lt;button onClick=&#123;()=&gt;&#123;this.props.minus(1)&#125;&#125;&gt;-&lt;/button&gt;</span><br><span class="line">                //增加异步操作</span><br><span class="line">                &lt;button onClick=&#123;()=&gt;&#123;this.props.async()&#125;&#125;&gt;异步加10&lt;/button&gt;</span><br><span class="line">            &lt;/div&gt;</span><br><span class="line">        )</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">export default connect(state=&gt;(&#123;</span><br><span class="line">    ...state</span><br><span class="line">&#125;),actions)(Counter)</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
-<p><img src="https://user-gold-cdn.xitu.io/2018/9/18/165ebbbfd8154639?w=800&amp;h=417&amp;f=png&amp;s=183854" alt=""></p>
-<ul>
-<li><a href="https://chaiguanpeng.github.io/" target="_blank" rel="noopener">更多优质文章参考</a></li>
+<blockquote>
+<p>终结，看效果。可以看出，点击后等待1s才加10。那我们就可以在call()中传入执行的异步函数(如ajax)来获取数据啦。我们这个例对应的delay函数</p>
+</blockquote>
+<p><img src="https://user-gold-cdn.xitu.io/2018/9/19/165f0feb3ce79301?w=252&amp;h=449&amp;f=gif&amp;s=834695" alt=""></p>
+<h3 id="最后在梳理下整个过程"><a href="#最后在梳理下整个过程" class="headerlink" title="最后在梳理下整个过程"></a>最后在梳理下整个过程</h3><ul>
+<li>1、组件中调用了this.props.async(),返回的action对象=&gt;{type:Types.ADD_ASYNC}会在connect方法中被派发</li>
+<li>2、saga中takeEvery(Types.ADD_ASYNC,add),监听到动作的类型后，触发 worker saga =&gt;add</li>
+<li>3、worker saga中先 yield call(delay,1000); 执行delay方法，延时1s</li>
+<li>4、yield put({type:Types.INCREMENT,count:10});  最后派发的还是INCREMENT的类型</li>
+<li>5、接着被reducer处理，更新state</li>
+<li><p>6、页面刷新</p>
+</li>
+<li><p><a href="https://chaiguanpeng.github.io/" target="_blank" rel="noopener">更多优质文章参考</a></p>
+</li>
 <li><a href="https://github.com/chaiguanpeng/react-code-analysis" target="_blank" rel="noopener">redux所有源码解析戳这里</a></li>
 </ul>
 
@@ -281,14 +279,14 @@
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/2018/12/30/about me/" data-toggle="tooltip" data-placement="top"
-                           title="who's 言Sir">&larr; Previous Post</a>
+                        <a href="/2018/08/26/初识react-三-在-react中使用redux来实现简版计数器/" data-toggle="tooltip" data-placement="top"
+                           title="初识react(三)在 react中使用redux来实现简版计数器">&larr; Previous Post</a>
                     </li>
                     
                     
                     <li class="next">
-                        <a href="/2018/09/13/初识react-一-揭开jsx语法和虚拟DOM面纱/" data-toggle="tooltip" data-placement="top"
-                           title="初识react(一) 揭开jsx语法和虚拟DOM面纱">Next Post &rarr;</a>
+                        <a href="/2018/08/24/初识react-五-零配置数据流解决方案-dva/" data-toggle="tooltip" data-placement="top"
+                           title="初识react(五) 零配置数据流解决方案 dva">Next Post &rarr;</a>
                     </li>
                     
                 </ul>
@@ -323,7 +321,7 @@
 
             <div class="hidden-xs col-sm-3 toc-col">
                 <div class="toc-wrap">
-                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#先把目录结构搭好"><span class="toc-text">先把目录结构搭好</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一、编写store部分"><span class="toc-text">一、编写store部分</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、编写最简单的store-action-types-js文件"><span class="toc-text">1、编写最简单的store/action-types.js文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2、编写reducers-counter-js文件"><span class="toc-text">2、编写reducers/counter.js文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3、编写reducers-index-js文件"><span class="toc-text">3、编写reducers/index.js文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4、-编写actions-counters-js"><span class="toc-text">4、 编写actions/counters.js</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5、编写store-index-js，仓库的主文件"><span class="toc-text">5、编写store/index.js，仓库的主文件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#二、组件调用部分"><span class="toc-text">二、组件调用部分</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、编写react的主入口文件，即-src-index-js"><span class="toc-text">1、编写react的主入口文件，即 src/index.js</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2、编写Counter组件"><span class="toc-text">2、编写Counter组件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#react-redux整个流程分析"><span class="toc-text">react-redux整个流程分析</span></a></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#回顾"><span class="toc-text">回顾</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#简介"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redux-saga工作原理"><span class="toc-text">redux-saga工作原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redux-saga分类"><span class="toc-text">redux-saga分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用redux-saga实现一个异步计数器"><span class="toc-text">使用redux-saga实现一个异步计数器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、修改actions-counter-js"><span class="toc-text">1、修改actions/counter.js</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2、重点，在src目录下增加saga-js文件"><span class="toc-text">2、重点，在src目录下增加saga.js文件</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#2-1-saga工作流程-代码从下往上看"><span class="toc-text">2.1 saga工作流程(代码从下往上看)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-2-redux-saga-effects-副作用"><span class="toc-text">2.2 redux-saga/effects 副作用</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3、在store-index引入rootSaga"><span class="toc-text">3、在store/index引入rootSaga</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4、在counter-js组件中派发这个异步动作"><span class="toc-text">4、在counter.js组件中派发这个异步动作</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#最后在梳理下整个过程"><span class="toc-text">最后在梳理下整个过程</span></a></li></ol>
                 </div>
             </div>
         </div>
