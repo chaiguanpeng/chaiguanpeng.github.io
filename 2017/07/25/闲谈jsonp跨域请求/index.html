@@ -224,19 +224,6 @@ public class ajax : IHttpHandler {
 <p> <img src="http://pic002.cnblogs.com/images/2011/75158/2011100917363685.gif" alt="言sir"></p>
 <p>  ajax jsonp与普通的ajax请求的主要区别在于——请求响应结果的处理。如上面代码所示的响应结果为：<br>  success_jsonpCallback([ { name:”John”} ] );</p>
 <p>  其实就是，调用jsonp回调函数success_jsonpCallback,并将要响应的字符串或json传入此方法(作为参数值)，<br>  其底层的实现，大概的猜想应该是：<br>    success_jsonpCallback([ { name:”John”} ] );<br>  function success_jsonpCallback(data)<br>  {<br>        success(data);<br>  }</p>
-<p>  <img src="http://oqsmnfdij.bkt.clouddn.com/images/pay.png" alt="言sir"></p>
-  <p style="text-align: center;display: block;
-      width: 100px;
-      margin:0 auto;
-      height: 30px;
-      line-height: 30px;
-      background-color: #E74851;
-      color: #fff;
-      text-align: center;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 16px;">打赏一个呗</p>
 
                 <hr>
                 
